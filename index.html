@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IPL Cricket Score Tracker & Leaderboard</title>
+  <!-- Google Fonts for modern premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap"
+    rel="stylesheet">
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+
+<body class="dark-theme">
+  <!-- App Container -->
+  <div class="app-container">
+
+    <!-- Top Header -->
+    <header class="main-header">
+      <div class="logo-area">
+        <div class="ipl-logo"><i class="fa-solid fa-trophy text-gold"></i></div>
+        <h1>Cricket <span>Live Hub</span></h1>
+      </div>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="live"><i class="fa-solid fa-tower-broadcast"></i> Live Scores</button>
+        <button class="nav-tab" data-tab="schedule"><i class="fa-solid fa-calendar-days"></i> Schedule &
+          Results</button>
+        <button class="nav-tab" data-tab="stats"><i class="fa-solid fa-ranking-star"></i> Leaderboard</button>
+        <button class="nav-tab" data-tab="admin"><i class="fa-solid fa-sliders"></i> Admin Panel</button>
+      </nav>
+      <div class="header-status" style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="btn-simulate" class="btn btn-accent-outline btn-xs"><i class="fa-solid fa-gamepad"></i> Toggle Live
+          Simulation</button>
+        <div id="db-status-badge" class="badge badge-success"><span class="pulse-dot"></span> API Connected</div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- 1. LIVE SCORES TAB -->
+      <section id="tab-live" class="tab-content active">
+        <div class="live-hero-banner">
+          <span class="live-count-badge" id="live-matches-count">0 Active</span>
+          <h2>Live Match Center</h2>
+          <p>Real-time IPL scores, stats &amp; leaderboards</p>
+        </div>
+        <div class="live-matches-grid" id="live-matches-container">
+          <!-- Live Match Cards loaded dynamically -->
+          <div class="empty-state">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <p>Fetching live matches...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. SCHEDULE & RESULTS TAB -->
+      <section id="tab-schedule" class="tab-content">
+        <div class="section-header">
+          <h2>Fixtures & Results</h2>
+          <div class="filter-controls">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Scheduled">Upcoming</button>
+            <button class="filter-btn" data-filter="Completed">Completed</button>
+          </div>
+        </div>
+        <div class="schedule-list" id="schedule-container">
+          <!-- Schedule cards loaded dynamically -->
+        </div>
+      </section>
+
+      <!-- 3. LEADERBOARD (ORANGE & PURPLE CAPS) TAB -->
+      <section id="tab-stats" class="tab-content">
+        <div class="stats-hero-banner">
+          <div class="cap-card orange-cap-theme">
+            <div class="cap-header">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <h3>Orange Cap Leader</h3>
+            </div>
+            <div class="cap-body" id="orange-cap-leader-box">
+              <!-- Dynamically populated Orange Cap Leader -->
+              <div class="leader-info">
+                <span class="player-name">Loading...</span>
+                <span class="player-team">--</span>
+              </div>
+              <div class="leader-stat">0 <small>Runs</small></div>
+            </div>
+          </div>
+          <div class="cap-card purple-cap-theme">
+            <div class="cap-header">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <h3>Purple Cap Leader</h3>
+            </div>
+            <div class="cap-body" id="purple-cap-leader-box">
+              <!-- Dynamically populated Purple Cap Leader -->
+              <div class="leader-info">
+                <span class="player-name">Loading...</span>
+                <span class="player-team">--</span>
+              </div>
+              <div class="leader-stat">0 <small>Wkts</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaderboards-grid">
+          <!-- Orange Cap Table -->
+          <div class="leaderboard-table-container">
+            <div class="table-title orange-text">
+              <i class="fa-solid fa-fire"></i> Orange Cap Race (Most Runs)
+            </div>
+            <div class="table-wrapper">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Mat</th>
+                    <th>Runs</th>
+                    <th>Balls</th>
+                    <th>S/R</th>
+                  </tr>
+                </thead>
+                <tbody id="orange-cap-tbody">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Purple Cap Table -->
+          <div class="leaderboard-table-container">
+            <div class="table-title purple-text">
+              <i class="fa-solid fa-bolt"></i> Purple Cap Race (Most Wickets)
+            </div>
+            <div class="table-wrapper">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Mat</th>
+                    <th>Wkts</th>
+                    <th>Overs</th>
+                    <th>Econ</th>
+                  </tr>
+                </thead>
+                <tbody id="purple-cap-tbody">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ADMIN PANEL TAB -->
+      <section id="tab-admin" class="tab-content">
+        <!-- Login Form visible to guest users -->
+        <div id="admin-auth-container" class="admin-card" style="max-width: 420px; margin: 3rem auto; padding: 2rem;">
+          <h3 style="text-align: center; border: none; margin-bottom: 1.5rem;">
+            <i class="fa-solid fa-lock text-gold"></i> Administrator Login
+          </h3>
+          <form id="admin-login-form" class="premium-form">
+            <div class="form-group">
+              <label for="admin-password">Enter Admin Password</label>
+              <input type="password" id="admin-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" style="width: 100%; margin-top: 0.5rem;">
+              <i class="fa-solid fa-key"></i> Authenticate
+            </button>
+          </form>
+          <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+            Default password is <strong>admin123</strong> (configured in backend .env)
+          </p>
+        </div>
+
+        <!-- Hidden console contents only visible when logged in -->
+        <div id="admin-console-wrapper" style="display: none;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <h3 style="margin-bottom: 0; font-size: 1.25rem;"><i class="fa-solid fa-sliders text-gold"></i> Control
+              Console</h3>
+            <button id="btn-admin-logout" class="btn btn-danger btn-sm" style="padding: 0.4rem 0.8rem;"><i
+                class="fa-solid fa-sign-out-alt"></i> Logout</button>
+          </div>
+          <div class="admin-grid">
+            <!-- Admin Actions -->
+            <div class="admin-card">
+              <h3><i class="fa-solid fa-plus-circle text-gold"></i> Schedule New IPL Match</h3>
+              <form id="add-match-form" class="premium-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="teamA">Team A (Home)</label>
+                    <select id="teamA" required>
+                      <option value="" disabled selected>Select Team A</option>
+                      <option value="CSK">Chennai Super Kings (CSK)</option>
+                      <option value="MI">Mumbai Indians (MI)</option>
+                      <option value="RCB">Royal Challengers Bengaluru (RCB)</option>
+                      <option value="KKR">Kolkata Knight Riders (KKR)</option>
+                      <option value="RR">Rajasthan Royals (RR)</option>
+                      <option value="SRH">Sunrisers Hyderabad (SRH)</option>
+                      <option value="DC">Delhi Capitals (DC)</option>
+                      <option value="PBKS">Punjab Kings (PBKS)</option>
+                      <option value="GT">Gujarat Titans (GT)</option>
+                      <option value="LSG">Lucknow Super Giants (LSG)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="teamB">Team B (Away)</label>
+                    <select id="teamB" required>
+                      <option value="" disabled selected>Select Team B</option>
+                      <option value="CSK">Chennai Super Kings (CSK)</option>
+                      <option value="MI">Mumbai Indians (MI)</option>
+                      <option value="RCB">Royal Challengers Bengaluru (RCB)</option>
+                      <option value="KKR">Kolkata Knight Riders (KKR)</option>
+                      <option value="RR">Rajasthan Royals (RR)</option>
+                      <option value="SRH">Sunrisers Hyderabad (SRH)</option>
+                      <option value="DC">Delhi Capitals (DC)</option>
+                      <option value="PBKS">Punjab Kings (PBKS)</option>
+                      <option value="GT">Gujarat Titans (GT)</option>
+                      <option value="LSG">Lucknow Super Giants (LSG)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="match-date">Date & Time</label>
+                    <input type="datetime-local" id="match-date" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="match-venue">Venue</label>
+                    <input type="text" id="match-venue" placeholder="e.g. Wankhede Stadium, Mumbai" required>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="toss-winner">Toss Winner (Optional)</label>
+                    <select id="toss-winner">
+                      <option value="">Select Toss Winner</option>
+                      <option value="CSK">CSK</option>
+                      <option value="MI">MI</option>
+                      <option value="RCB">RCB</option>
+                      <option value="KKR">KKR</option>
+                      <option value="RR">RR</option>
+                      <option value="SRH">SRH</option>
+                      <option value="DC">DC</option>
+                      <option value="PBKS">PBKS</option>
+                      <option value="GT">GT</option>
+                      <option value="LSG">LSG</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="toss-decision">Toss Decision</label>
+                    <select id="toss-decision">
+                      <option value="">Select Decision</option>
+                      <option value="bat">Bat First</option>
+                      <option value="bowl">Bowl First</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-calendar-plus"></i> Schedule
+                  Match</button>
+              </form>
+            </div>
+
+            <div class="admin-card">
+              <h3><i class="fa-solid fa-user-plus text-gold"></i> Register IPL Player</h3>
+              <form id="add-player-form" class="premium-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="player-name">Player Name</label>
+                    <input type="text" id="player-name" placeholder="e.g. Virat Kohli" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="player-team">IPL Team</label>
+                    <select id="player-team" required>
+                      <option value="" disabled selected>Select Franchise</option>
+                      <option value="CSK">CSK</option>
+                      <option value="MI">MI</option>
+                      <option value="RCB">RCB</option>
+                      <option value="KKR">KKR</option>
+                      <option value="RR">RR</option>
+                      <option value="SRH">SRH</option>
+                      <option value="DC">DC</option>
+                      <option value="PBKS">PBKS</option>
+                      <option value="GT">GT</option>
+                      <option value="LSG">LSG</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-user-check"></i> Register
+                  Player</button>
+              </form>
+              <div style="margin-top: 1.5rem; text-align: right;">
+                <button id="btn-rebuild-stats" class="btn btn-accent-outline btn-sm"><i
+                    class="fa-solid fa-arrows-rotate"></i> Rebuild Tournament Stats</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Management List -->
+          <div class="admin-matches-section">
+            <h3>Manage Scheduled & Live Matches</h3>
+            <div class="table-wrapper">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Teams</th>
+                    <th>Date & Time</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th>Scorecard</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-matches-tbody">
+                  <!-- Managed dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> <!-- Closing admin-console-wrapper -->
+      </section>
+
+    </main>
+
+    <!-- Modal for Updating Score & Player Stats -->
+    <div id="update-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-match-title">CSK vs MI - Live Update Console</h2>
+          <span class="close-btn" id="modal-close-btn">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="update-match-scorecard-form">
+            <!-- Hidden inputs -->
+            <input type="hidden" id="modal-match-id">
+
+            <!-- Scores Configuration -->
+            <div class="scorecard-setup-row">
+              <div class="score-input-card">
+                <h4 id="label-team-a">CSK</h4>
+                <div class="score-fields">
+                  <div class="form-group">
+                    <label>Runs</label>
+                    <input type="number" id="score-runs-a" min="0" value="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Wkts</label>
+                    <input type="number" id="score-wkts-a" min="0" max="10" value="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Overs</label>
+                    <input type="number" step="0.1" id="score-overs-a" min="0" max="20" value="0">
+                  </div>
+                </div>
+                <div class="quick-increment-buttons">
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="A" data-type="run"
+                    data-val="1">+1</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="A" data-type="run"
+                    data-val="4">+4</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="A" data-type="run"
+                    data-val="6">+6</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="A" data-type="wkt"
+                    data-val="1">+Wkt</button>
+                </div>
+              </div>
+
+              <div class="score-input-card">
+                <h4 id="label-team-b">MI</h4>
+                <div class="score-fields">
+                  <div class="form-group">
+                    <label>Runs</label>
+                    <input type="number" id="score-runs-b" min="0" value="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Wkts</label>
+                    <input type="number" id="score-wkts-b" min="0" max="10" value="0">
+                  </div>
+                  <div class="form-group">
+                    <label>Overs</label>
+                    <input type="number" step="0.1" id="score-overs-b" min="0" max="20" value="0">
+                  </div>
+                </div>
+                <div class="quick-increment-buttons">
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="B" data-type="run"
+                    data-val="1">+1</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="B" data-type="run"
+                    data-val="4">+4</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="B" data-type="run"
+                    data-val="6">+6</button>
+                  <button type="button" class="btn btn-xs btn-outline score-inc-btn" data-team="B" data-type="wkt"
+                    data-val="1">+Wkt</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Toss, Innings & Status Details -->
+            <div class="match-meta-grid">
+              <div class="form-group">
+                <label for="modal-status">Match Status</label>
+                <select id="modal-status">
+                  <option value="Scheduled">Scheduled</option>
+                  <option value="Live">Live</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="modal-current-innings">Current Innings</label>
+                <select id="modal-current-innings">
+                  <option value="1">1st Innings</option>
+                  <option value="2">2nd Innings</option>
+                </select>
+              </div>
+              <div class="form-group md-span-2">
+                <label for="modal-result">Result / Match Summary</label>
+                <input type="text" id="modal-result" placeholder="e.g. CSK won by 15 runs / RCB won by 7 wickets">
+              </div>
+            </div>
+
+            <hr class="modal-divider">
+
+            <!-- Batsmen Scorecard Stats -->
+            <div class="player-scorecard-section">
+              <div class="section-title-row">
+                <h4><i class="fa-solid fa-batting-post"></i> Batsmen Performance</h4>
+                <button type="button" id="btn-add-batsman-row" class="btn btn-xs btn-accent"><i
+                    class="fa-solid fa-plus"></i> Add Batsman</button>
+              </div>
+              <div class="table-wrapper">
+                <table class="premium-table sm-table">
+                  <thead>
+                    <tr>
+                      <th>Batsman Name</th>
+                      <th>Team</th>
+                      <th style="width: 70px;">Runs</th>
+                      <th style="width: 70px;">Balls</th>
+                      <th style="width: 50px;">4s</th>
+                      <th style="width: 50px;">6s</th>
+                      <th>Dismissal</th>
+                      <th style="width: 40px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="modal-batsmen-tbody">
+                    <!-- Batsmen rows loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <hr class="modal-divider">
+
+            <!-- Bowlers Scorecard Stats -->
+            <div class="player-scorecard-section">
+              <div class="section-title-row">
+                <h4><i class="fa-solid fa-baseball"></i> Bowlers Performance</h4>
+                <button type="button" id="btn-add-bowler-row" class="btn btn-xs btn-accent"><i
+                    class="fa-solid fa-plus"></i> Add Bowler</button>
+              </div>
+              <div class="table-wrapper">
+                <table class="premium-table sm-table">
+                  <thead>
+                    <tr>
+                      <th>Bowler Name</th>
+                      <th>Team</th>
+                      <th style="width: 70px;">Overs</th>
+                      <th style="width: 70px;">Runs Conceded</th>
+                      <th style="width: 70px;">Wickets</th>
+                      <th style="width: 40px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="modal-bowler-tbody">
+                    <!-- Bowler rows loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary-outline" id="modal-cancel-btn">Cancel</button>
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Save Scorecard</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+      <div class="toast-content">
+        <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+        <span id="toast-message">Action successful!</span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 Indian Premier League Score Tracker. Engineered using Node.js, Express & MongoDB.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
